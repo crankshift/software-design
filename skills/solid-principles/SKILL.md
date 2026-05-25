@@ -10,10 +10,11 @@ Use when code boundaries, inheritance, interfaces, or dependencies are making ch
 
 Workflow:
 1. Identify which SOLID pressure is present: responsibility, extension, substitution, interface size, or dependency direction.
-2. Load one to three matching cards from `catalog/principles/solid/`.
-3. Prefer a local boundary improvement before introducing a framework or broad abstraction.
-4. Check that callers can understand the unit without reading its internals.
-5. Verify that the change reduces a concrete reason to change.
+2. For new feature or project work, treat this as a mandatory design check alongside `dry-kiss-yagni`.
+3. Load relevant cards from `catalog/principles/solid/` for the identified pressure.
+4. Prefer a local boundary improvement before introducing a framework or broad abstraction.
+5. Check that callers can understand the unit without reading its internals.
+6. Verify that the change reduces a concrete reason to change.
 
 Stop when:
 - The current code is simple and the SOLID change would only add indirection.

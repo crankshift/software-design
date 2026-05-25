@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
-test("README documents direct package installs without generated adapters", async () => {
+test("README documents direct package installs", async () => {
   const body = await readFile("README.md", "utf8");
 
   assert.match(body, /Software Design Plugin/);
@@ -20,4 +20,5 @@ test("README documents direct package installs without generated adapters", asyn
   assert.doesNotMatch(body, /git clone/);
   assert.doesNotMatch(body, /npm run generate/);
   assert.doesNotMatch(body, /adapters\//);
+  assert.doesNotMatch(body, /core\/agent\.md/);
 });

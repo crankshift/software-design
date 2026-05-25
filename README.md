@@ -10,14 +10,13 @@ Give your agent Software Design: [Claude Code](#claude-code), [Codex CLI](#codex
 
 This project keeps software design guidance useful without flooding an agent's context. It uses a few primary skills for workflow decisions, plus compact catalog cards for specific design decisions.
 
-Agents should start with the primary skills, then load only one to three catalog cards when a decision needs focused guidance. That keeps active context small while still making a broad software design catalog available.
+Agents should start with the primary skills, route refactor requests through code-smell diagnosis first, and load relevant catalog cards when a decision needs focused guidance. Feature and project work must include SOLID and DRY/KISS/YAGNI checks before implementation planning.
 
 ## Architecture
 
 This repository is the single installable package. The source of truth is the root content:
 
 - [`AGENTS.md`](AGENTS.md) for cross-platform orchestration instructions.
-- [`core/agent.md`](core/agent.md) for the canonical orchestrator prompt.
 - [`skills/`](skills/) for the primary workflow skills.
 - [`catalog/`](catalog/) for compact design reference cards.
 
@@ -28,7 +27,7 @@ Platform directories contain only metadata or install glue:
 - [`.opencode/INSTALL.md`](.opencode/INSTALL.md)
 - [`.opencode/plugins/software-design.js`](.opencode/plugins/software-design.js)
 
-There are no checked-in generated adapter copies.
+No platform directory contains duplicated skills or catalog cards.
 
 ## Catalog Coverage
 

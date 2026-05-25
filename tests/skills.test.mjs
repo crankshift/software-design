@@ -25,10 +25,35 @@ test("primary skills exist and route to catalog instead of embedding everything"
   }
 });
 
-test("core agent prevents pattern forcing", async () => {
-  const body = await readFile("core/agent.md", "utf8");
+test("root instructions route refactors through smells and features through core principles", async () => {
+  const body = await readFile("AGENTS.md", "utf8");
   assert.match(body, /KISS/);
   assert.match(body, /YAGNI/);
   assert.match(body, /Do not force design patterns/);
-  assert.match(body, /one to three catalog cards/);
+  assert.match(body, /code-smell-diagnosis/);
+  assert.match(body, /refactor/i);
+  assert.match(body, /solid-principles/);
+  assert.match(body, /dry-kiss-yagni/);
+  assert.match(body, /feature/i);
+  assert.match(body, /project/i);
+  assert.match(body, /relevant catalog cards/);
+});
+
+test("refactor and feature workflow skills declare mandatory triage", async () => {
+  const orchestrator = await readFile("skills/software-design-orchestrator/SKILL.md", "utf8");
+  const smells = await readFile("skills/code-smell-diagnosis/SKILL.md", "utf8");
+  const refactoring = await readFile("skills/refactoring-selection/SKILL.md", "utf8");
+
+  assert.match(orchestrator, /refactor/i);
+  assert.match(orchestrator, /code-smell-diagnosis/);
+  assert.match(orchestrator, /solid-principles/);
+  assert.match(orchestrator, /dry-kiss-yagni/);
+  assert.match(orchestrator, /pattern-selection/);
+  assert.match(orchestrator, /relevant workflow skills/);
+
+  assert.match(smells, /refactor/i);
+  assert.match(smells, /triage/i);
+  assert.match(smells, /workflow skills/);
+
+  assert.match(refactoring, /code-smell-diagnosis/);
 });

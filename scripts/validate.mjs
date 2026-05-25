@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { access, readdir, readFile } from "node:fs/promises";
-import { dirname, join, relative, sep } from "node:path";
+import { dirname, extname, join, relative, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const rootFromHere = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -23,6 +23,35 @@ const expectedCatalogCounts = new Map([
   ["smells", 23],
   ["refactorings", 66],
 ]);
+const forbiddenRoutingPhrases = [
+  ["one", "to", "three"].join(" "),
+  ["1", "3"].join("-"),
+  ["Load only", "the matching workflow skill"].join(" "),
+  ["load only", "the matching workflow skill"].join(" "),
+];
+const forbiddenArchitecturePhrases = [
+  ["core", "agent.md"].join("/"),
+  ["generated", "adapter"].join(" "),
+  ["adapter", "copy"].join(" "),
+  ["adapter", "copies"].join(" "),
+  ["adapter", "trees"].join(" "),
+  ["adapters", ""].join("/"),
+  ["scripts", "generate.mjs"].join("/"),
+  ["scripts", "lib"].join("/"),
+  ["3", "adapters"].join(" "),
+];
+const scannedExtensions = new Set([".md", ".mjs", ".js", ".json"]);
+const ignoredDirectories = new Set([".git", "node_modules"]);
+const legacyArchitecturePaths = [
+  "core",
+  "adapters",
+  join("scripts", "generate.mjs"),
+  join("scripts", "lib"),
+  join("docs", "superpowers", "plans", "2026-05-25-software-design-plugin.md"),
+  join("docs", "superpowers", "specs", "2026-05-25-software-design-plugin-design.md"),
+  join("docs", "superpowers", "plans", "2026-05-25-single-source-plugin-redesign.md"),
+  join("docs", "superpowers", "specs", "2026-05-25-single-source-plugin-redesign-design.md"),
+];
 
 async function pathExists(path) {
   try {
@@ -52,6 +81,44 @@ async function listMarkdownFiles(directory) {
     }
   }
   return files.sort();
+}
+
+async function listTextFiles(directory) {
+  const files = [];
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    const path = join(directory, entry.name);
+    if (entry.isDirectory()) {
+      if (!ignoredDirectories.has(entry.name)) {
+        files.push(...(await listTextFiles(path)));
+      }
+    } else if (entry.isFile() && scannedExtensions.has(extname(entry.name))) {
+      files.push(path);
+    }
+  }
+
+  return files.sort();
+}
+
+async function validateNoStaleReferences(root) {
+  for (const file of await listTextFiles(root)) {
+    const body = await readRequired(file);
+    for (const phrase of forbiddenRoutingPhrases) {
+      assert.ok(!body.includes(phrase), `${relative(root, file)} contains old capped routing phrase: ${phrase}`);
+    }
+    for (const phrase of forbiddenArchitecturePhrases) {
+      assert.ok(!body.includes(phrase), `${relative(root, file)} contains legacy architecture reference: ${phrase}`);
+    }
+  }
+}
+
+async function validateNoLegacyArchitecture(root) {
+  for (const legacyPath of legacyArchitecturePaths) {
+    assert.equal(
+      await pathExists(join(root, legacyPath)),
+      false,
+      `legacy architecture artifact should not exist: ${legacyPath}`,
+    );
+  }
 }
 
 async function validateCatalog(root) {
@@ -104,14 +171,11 @@ async function validateRootInstructions(root) {
   assert.match(agents, /Software Design Orchestrator/);
   assert.match(agents, /single source of truth/i);
   assert.match(agents, /primary skills/);
-  assert.match(agents, /one to three catalog cards/);
-  assert.doesNotMatch(agents, /generated adapters/i);
-
-  const coreAgent = await readRequired(join(root, "core/agent.md"));
-  assert.match(coreAgent, /Software Design Orchestrator/);
-  assert.match(coreAgent, /KISS/);
-  assert.match(coreAgent, /YAGNI/);
-  assert.match(coreAgent, /Do not force design patterns/);
+  assert.match(agents, /code-smell-diagnosis/);
+  assert.match(agents, /solid-principles/);
+  assert.match(agents, /dry-kiss-yagni/);
+  assert.match(agents, /relevant catalog cards/);
+  assert.match(agents, /Do not force design patterns/);
 }
 
 async function readJson(path) {
@@ -119,8 +183,6 @@ async function readJson(path) {
 }
 
 async function validatePlatformMetadata(root) {
-  assert.equal(await pathExists(join(root, "adapters")), false, "adapters/ should not exist");
-
   const claudePlugin = await readJson(join(root, ".claude-plugin/plugin.json"));
   assert.equal(claudePlugin.name, "software-design");
   assert.equal(claudePlugin.version, "0.1.0");
@@ -152,9 +214,11 @@ async function validatePlatformMetadata(root) {
 }
 
 export async function validateProject(root = rootFromHere) {
+  await validateNoLegacyArchitecture(root);
   const cardCount = await validateCatalog(root);
   const skillCount = await validateSkills(root);
   await validateRootInstructions(root);
+  await validateNoStaleReferences(root);
   const platformCount = await validatePlatformMetadata(root);
   return { cardCount, skillCount, platformCount };
 }

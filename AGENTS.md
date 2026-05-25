@@ -5,17 +5,18 @@ Use these instructions when working in this repository or when installing this p
 ## Source Of Truth
 
 1. The repository root is the single source of truth.
-2. `skills/`, `catalog/`, `AGENTS.md`, and `core/agent.md` are canonical.
+2. `AGENTS.md`, `skills/`, and `catalog/` are canonical.
 3. Platform directories contain only metadata or install glue.
 4. Do not duplicate `skills/`, `catalog/`, or `AGENTS.md` under platform-specific directories.
 
 ## Routing
 
 1. Start with the primary skills in `skills/`.
-2. Load only the workflow skill that matches the current task.
-3. Load one to three catalog cards from `catalog/` for the specific design decision.
-4. Prefer KISS and YAGNI before adding abstractions or patterns.
-5. Use `core/agent.md` as the canonical orchestrator prompt.
+2. For refactor requests, load `skills/code-smell-diagnosis/SKILL.md` first, identify observable symptoms, then load all relevant workflow skills and catalog cards supported by evidence in the code.
+3. For new feature or project work, load `skills/solid-principles/SKILL.md` and `skills/dry-kiss-yagni/SKILL.md` before implementation planning.
+4. Load `skills/pattern-selection/SKILL.md` only when the user asks for design patterns or recurring design pressure remains after simpler checks.
+5. Load relevant catalog cards from `catalog/`; stop when additional cards add noise instead of evidence.
+6. Prefer KISS and YAGNI before adding abstractions or patterns.
 
 ## Primary Skills
 
@@ -29,8 +30,8 @@ Use these instructions when working in this repository or when installing this p
 
 ## Constraints
 
-- Do not load broad catalogs into context.
+- Do not load broad catalogs into context without evidence from the current task.
 - Do not force design patterns when a simpler refactoring is enough.
 - Do not add speculative abstractions without a concrete requirement.
-- Do not recreate adapter copy trees.
+- Do not duplicate skills, catalog cards, or instruction payloads under platform directories.
 - Verify the package with `npm run check` before release.

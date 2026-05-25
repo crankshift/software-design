@@ -13,7 +13,6 @@ const fixtureEntries = [
   ".codex-plugin",
   ".opencode",
   "catalog",
-  "core",
   "skills",
 ];
 
@@ -79,13 +78,42 @@ test("validateProject rejects Claude Code plugin author that is not an object wi
   }
 });
 
-test("validateProject rejects reintroduced adapter copy trees", async () => {
+test("validateProject rejects legacy package-output trees", async () => {
   const root = await mkdtemp(join(tmpdir(), "software-design-validate-"));
   try {
     await copyCanonicalFixture(root);
-    await mkdir(join(root, "adapters/opencode"), { recursive: true });
+    await mkdir(join(root, "adapters", "opencode"), { recursive: true });
 
-    await assert.rejects(() => validateProject(root), /adapters\/ should not exist/);
+    await assert.rejects(() => validateProject(root), /legacy architecture/i);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("validateProject rejects legacy core prompt files", async () => {
+  const root = await mkdtemp(join(tmpdir(), "software-design-validate-"));
+  try {
+    await copyCanonicalFixture(root);
+    await mkdir(join(root, "core"), { recursive: true });
+    await writeFile(join(root, "core", "agent.md"), "# Legacy\n", "utf8");
+
+    await assert.rejects(() => validateProject(root), /legacy architecture/i);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("validateProject rejects old capped routing instructions", async () => {
+  const root = await mkdtemp(join(tmpdir(), "software-design-validate-"));
+  try {
+    await copyCanonicalFixture(root);
+    const agentsPath = join(root, "AGENTS.md");
+    const cappedCards = ["one", "to", "three"].join(" ");
+    const oldWorkflow = ["Load only", "the matching workflow skill"].join(" ");
+    const body = await readFile(agentsPath, "utf8");
+    await writeFile(agentsPath, `${body}\n${oldWorkflow}. Load ${cappedCards} catalog cards.\n`, "utf8");
+
+    await assert.rejects(() => validateProject(root), /old capped routing/i);
   } finally {
     await rm(root, { recursive: true, force: true });
   }
