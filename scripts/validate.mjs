@@ -1,8 +1,7 @@
 import assert from "node:assert/strict";
-import { access, readFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { access, readdir, readFile } from "node:fs/promises";
+import { dirname, join, relative, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { allItems } from "./lib/catalog.mjs";
 
 const rootFromHere = dirname(dirname(fileURLToPath(import.meta.url)));
 
@@ -16,9 +15,14 @@ const skills = [
   "implementation-review",
 ];
 
-const adapters = ["claude-code", "codex", "opencode"];
-
 const cardSections = ["Use when:", "Avoid when:", "Apply:", "Verify:", "Related:"];
+
+const expectedCatalogCounts = new Map([
+  ["principles", 8],
+  ["patterns", 22],
+  ["smells", 23],
+  ["refactorings", 66],
+]);
 
 async function pathExists(path) {
   try {
@@ -37,17 +41,43 @@ async function readRequired(path) {
   }
 }
 
-async function validateCatalog(root) {
-  assert.equal(allItems.length, 119, "catalog data should contain 119 items");
+async function listMarkdownFiles(directory) {
+  const files = [];
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    const path = join(directory, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...(await listMarkdownFiles(path)));
+    } else if (entry.isFile() && entry.name.endsWith(".md")) {
+      files.push(path);
+    }
+  }
+  return files.sort();
+}
 
-  for (const item of allItems) {
-    const body = await readRequired(join(root, item.path));
+async function validateCatalog(root) {
+  const catalogRoot = join(root, "catalog");
+  const files = await listMarkdownFiles(catalogRoot);
+  assert.equal(files.length, 119, "catalog should contain 119 markdown cards");
+
+  const counts = new Map([...expectedCatalogCounts].map(([kind]) => [kind, 0]));
+  for (const file of files) {
+    const relativePath = relative(catalogRoot, file);
+    const [kind] = relativePath.split(sep);
+    if (counts.has(kind)) {
+      counts.set(kind, counts.get(kind) + 1);
+    }
+
+    const body = await readRequired(file);
     for (const section of cardSections) {
-      assert.ok(body.includes(section), `${item.path} should contain ${section}`);
+      assert.ok(body.includes(section), `${relative(root, file)} should contain ${section}`);
     }
   }
 
-  return allItems.length;
+  for (const [kind, expected] of expectedCatalogCounts) {
+    assert.equal(counts.get(kind), expected, `catalog/${kind} should contain ${expected} cards`);
+  }
+
+  return files.length;
 }
 
 function validateSkillBody(skill, body) {
@@ -60,93 +90,76 @@ function validateSkillBody(skill, body) {
   assert.ok(body.length < 3500, `${skill} should stay under 3500 characters`);
 }
 
-async function skillPath(root, skill) {
-  const generatedPath = join(root, "skills", skill, "SKILL.md");
-  return (await pathExists(generatedPath)) ? generatedPath : join(rootFromHere, "skills", skill, "SKILL.md");
-}
-
 async function validateSkills(root) {
   for (const skill of skills) {
-    const body = await readRequired(await skillPath(root, skill));
+    const body = await readRequired(join(root, "skills", skill, "SKILL.md"));
     validateSkillBody(skill, body);
   }
 
   return skills.length;
 }
 
-async function validateAdapterCopies(root, adapter) {
-  const adapterRoot = join(root, "adapters", adapter);
-  await validateCatalog(adapterRoot);
+async function validateRootInstructions(root) {
+  const agents = await readRequired(join(root, "AGENTS.md"));
+  assert.match(agents, /Software Design Orchestrator/);
+  assert.match(agents, /single source of truth/i);
+  assert.match(agents, /primary skills/);
+  assert.match(agents, /one to three catalog cards/);
+  assert.doesNotMatch(agents, /generated adapters/i);
 
-  for (const skill of skills) {
-    const body = await readRequired(join(adapterRoot, "skills", skill, "SKILL.md"));
-    validateSkillBody(skill, body);
-  }
+  const coreAgent = await readRequired(join(root, "core/agent.md"));
+  assert.match(coreAgent, /Software Design Orchestrator/);
+  assert.match(coreAgent, /KISS/);
+  assert.match(coreAgent, /YAGNI/);
+  assert.match(coreAgent, /Do not force design patterns/);
 }
 
-async function validateAdapters(root) {
-  const plugin = await readRequired(join(root, "adapters/claude-code/.claude-plugin/plugin.json"));
-  const claudePlugin = JSON.parse(plugin);
+async function readJson(path) {
+  return JSON.parse(await readRequired(path));
+}
+
+async function validatePlatformMetadata(root) {
+  assert.equal(await pathExists(join(root, "adapters")), false, "adapters/ should not exist");
+
+  const claudePlugin = await readJson(join(root, ".claude-plugin/plugin.json"));
   assert.equal(claudePlugin.name, "software-design");
+  assert.equal(claudePlugin.version, "0.1.0");
   assert.deepEqual(
     claudePlugin.author,
     { name: "software-design contributors" },
     "Claude Code plugin author should be an object with contributor name",
   );
 
-  const claudeAgent = await readRequired(join(root, "adapters/claude-code/agents/software-design.md"));
-  assert.match(claudeAgent, /^---\n/);
-  assert.match(claudeAgent, /^name: software-design$/m);
-  assert.match(claudeAgent, /^description:/m);
-  assert.match(claudeAgent, /^model: inherit$/m);
-  assert.match(claudeAgent, /^color: blue$/m);
-  assert.match(claudeAgent, /Software Design Orchestrator/);
+  const codexPlugin = await readJson(join(root, ".codex-plugin/plugin.json"));
+  assert.equal(codexPlugin.name, "software-design");
+  assert.equal(codexPlugin.version, "0.1.0");
+  assert.equal(codexPlugin.skills, "./skills/");
+  assert.equal(codexPlugin.interface.displayName, "Software Design");
 
-  const claudeInstructions = await readRequired(join(root, "adapters/claude-code/AGENTS.md"));
-  assert.match(claudeInstructions, /Software Design Orchestrator/);
+  const opencodeInstall = await readRequired(join(root, ".opencode/INSTALL.md"));
+  assert.match(opencodeInstall, /Installing Software Design Plugin for OpenCode/);
+  assert.match(opencodeInstall, /Add software-design-plugin to the `plugin` array/);
+  assert.match(opencodeInstall, /software-design-plugin@git\+https:\/\/github\.com\/khmara\/software-design\.git/);
+  assert.match(opencodeInstall, /Migrating from the old symlink-based install/);
+  assert.match(opencodeInstall, /Tool mapping/);
 
-  const claudeReadme = await readRequired(join(root, "adapters/claude-code/README.md"));
-  assert.match(claudeReadme, /Software Design Plugin/);
-  assert.match(claudeReadme, /Claude Code/);
+  const opencodePlugin = await readRequired(join(root, ".opencode/plugins/software-design.js"));
+  assert.match(opencodePlugin, /export const SoftwareDesignPlugin/);
+  assert.match(opencodePlugin, /\.\.\/\.\.\/skills/);
+  assert.match(opencodePlugin, /config\.skills\.paths/);
 
-  const codexAgent = await readRequired(join(root, "adapters/codex/AGENTS.md"));
-  assert.match(codexAgent, /Software Design Orchestrator/);
-
-  const codexReadme = await readRequired(join(root, "adapters/codex/README.md"));
-  assert.match(codexReadme, /Software Design Plugin/);
-  assert.match(codexReadme, /Codex/);
-
-  const opencodeAgent = await readRequired(join(root, "adapters/opencode/AGENTS.md"));
-  assert.match(opencodeAgent, /Software Design Orchestrator/);
-
-  const opencodeReadme = await readRequired(join(root, "adapters/opencode/README.md"));
-  assert.match(opencodeReadme, /Software Design Plugin/);
-  assert.match(opencodeReadme, /OpenCode/);
-
-  const opencodeConfig = await readRequired(join(root, "adapters/opencode/opencode.jsonc"));
-  assert.deepEqual(JSON.parse(opencodeConfig), {
-    $schema: "https://opencode.ai/config.json",
-    instructions: ["AGENTS.md"],
-    skills: {
-      paths: ["skills"],
-    },
-  });
-
-  for (const adapter of adapters) {
-    await validateAdapterCopies(root, adapter);
-  }
-
-  return adapters.length;
+  return 3;
 }
 
 export async function validateProject(root = rootFromHere) {
   const cardCount = await validateCatalog(root);
   const skillCount = await validateSkills(root);
-  const adapterCount = await validateAdapters(root);
-  return { cardCount, skillCount, adapterCount };
+  await validateRootInstructions(root);
+  const platformCount = await validatePlatformMetadata(root);
+  return { cardCount, skillCount, platformCount };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const result = await validateProject();
-  console.log(`Validation passed: ${result.cardCount} cards, ${result.skillCount} skills, ${result.adapterCount} adapters.`);
+  console.log(`Validation passed: ${result.cardCount} cards, ${result.skillCount} skills, ${result.platformCount} platforms.`);
 }

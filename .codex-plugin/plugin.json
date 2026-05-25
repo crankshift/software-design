@@ -1,0 +1,32 @@
+{
+  "name": "software-design",
+  "version": "0.1.0",
+  "description": "Portable software design skills and catalog for Claude Code, Codex, and OpenCode.",
+  "author": {
+    "name": "software-design contributors"
+  },
+  "keywords": [
+    "software-design",
+    "skills",
+    "refactoring",
+    "design-patterns"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Software Design",
+    "shortDescription": "Software design triage, refactoring, smells, and pattern-selection skills",
+    "longDescription": "Use Software Design to guide coding agents through design triage, SOLID checks, DRY/KISS/YAGNI decisions, code-smell diagnosis, refactoring selection, implementation review, and focused catalog-card lookup.",
+    "developerName": "software-design contributors",
+    "category": "Coding",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Review this design before implementation.",
+      "Help me refactor this code safely."
+    ],
+    "brandColor": "#2563EB"
+  }
+}

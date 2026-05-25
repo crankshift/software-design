@@ -1,6 +1,13 @@
 # Software Design Orchestrator
 
-Use these instructions when working in this repository or when installing the generated adapters into Claude Code, Codex, or OpenCode.
+Use these instructions when working in this repository or when installing this package into Claude Code, Codex, or OpenCode.
+
+## Source Of Truth
+
+1. The repository root is the single source of truth.
+2. `skills/`, `catalog/`, `AGENTS.md`, and `core/agent.md` are canonical.
+3. Platform directories contain only metadata or install glue.
+4. Do not duplicate `skills/`, `catalog/`, or `AGENTS.md` under platform-specific directories.
 
 ## Routing
 
@@ -25,4 +32,5 @@ Use these instructions when working in this repository or when installing the ge
 - Do not load broad catalogs into context.
 - Do not force design patterns when a simpler refactoring is enough.
 - Do not add speculative abstractions without a concrete requirement.
-- Verify generated adapters with `npm run check` before release.
+- Do not recreate adapter copy trees.
+- Verify the package with `npm run check` before release.

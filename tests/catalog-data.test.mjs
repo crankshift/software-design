@@ -1,27 +1,57 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { allItems, patterns, principles, refactorings, smells } from "../scripts/lib/catalog.mjs";
+import { readdir, readFile } from "node:fs/promises";
+import { join, relative, sep } from "node:path";
 
-test("catalog contains the approved coverage", () => {
-  assert.equal(principles.length, 8);
-  assert.equal(patterns.length, 22);
-  assert.equal(smells.length, 23);
-  assert.equal(refactorings.length, 66);
-  assert.equal(allItems.length, 119);
+const expectedCatalogCounts = new Map([
+  ["principles", 8],
+  ["patterns", 22],
+  ["smells", 23],
+  ["refactorings", 66],
+]);
+
+const cardSections = ["Use when:", "Avoid when:", "Apply:", "Verify:", "Related:"];
+
+async function listMarkdownFiles(directory) {
+  const files = [];
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    const path = join(directory, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...(await listMarkdownFiles(path)));
+    } else if (entry.isFile() && entry.name.endsWith(".md")) {
+      files.push(path);
+    }
+  }
+  return files.sort();
+}
+
+test("catalog contains the approved coverage as canonical files", async () => {
+  const files = await listMarkdownFiles("catalog");
+  const counts = new Map([...expectedCatalogCounts].map(([kind]) => [kind, 0]));
+
+  for (const file of files) {
+    const [kind] = relative("catalog", file).split(sep);
+    if (counts.has(kind)) {
+      counts.set(kind, counts.get(kind) + 1);
+    }
+  }
+
+  assert.equal(files.length, 119);
+  for (const [kind, expected] of expectedCatalogCounts) {
+    assert.equal(counts.get(kind), expected, `catalog/${kind} should contain ${expected} cards`);
+  }
 });
 
-test("catalog paths and slugs are unique", () => {
-  assert.equal(new Set(allItems.map((item) => item.slug)).size, allItems.length);
-  assert.equal(new Set(allItems.map((item) => item.path)).size, allItems.length);
+test("catalog file paths are unique", async () => {
+  const files = await listMarkdownFiles("catalog");
+  assert.equal(new Set(files).size, files.length);
 });
 
-test("catalog items include required metadata", () => {
-  for (const item of allItems) {
-    assert.ok(item.title, "title is required");
-    assert.ok(item.slug, `${item.title} slug is required`);
-    assert.ok(item.kind, `${item.title} kind is required`);
-    assert.ok(item.group, `${item.title} group is required`);
-    assert.ok(item.path, `${item.title} path is required`);
-    assert.ok(item.sourceUrl, `${item.title} sourceUrl is required`);
+test("catalog cards include required sections", async () => {
+  for (const file of await listMarkdownFiles("catalog")) {
+    const body = await readFile(file, "utf8");
+    for (const section of cardSections) {
+      assert.ok(body.includes(section), `${file} should contain ${section}`);
+    }
   }
 });
