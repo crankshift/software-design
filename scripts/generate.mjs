@@ -32,6 +32,25 @@ async function writeCatalog(root, prefix = "") {
   return allItems.length;
 }
 
+function adapterReadme(platform, files, installNote) {
+  return `# Software Design Plugin - ${platform} Adapter
+
+This generated adapter packages the Software Design Plugin for ${platform}.
+
+## Contents
+
+${files.map((file) => `- \`${file}\``).join("\n")}
+
+## Install
+
+${installNote}
+
+## Usage
+
+Start with the primary skills in \`skills/\`, then load one to three cards from \`catalog/\` for the specific design decision. Prefer KISS and YAGNI before adding patterns or abstractions.
+`;
+}
+
 export async function generateCatalog(root = rootFromHere) {
   await rm(join(root, "catalog"), { recursive: true, force: true });
   return await writeCatalog(root);
@@ -41,7 +60,7 @@ export async function generateAdapters(root = rootFromHere) {
   const coreRoot = await sourceRootFor(root, "core/agent.md");
   const skillsRoot = await sourceRootFor(root, "skills");
   const agent = await readFile(join(coreRoot, "core/agent.md"), "utf8");
-const claudeAgent = `---
+  const claudeAgent = `---
 name: software-design
 description: Orchestrates software design principles, code smells, refactorings, and pattern selection.
 model: inherit
@@ -68,12 +87,23 @@ ${agent}`;
             2,
           )}\n`,
         ],
+        ["AGENTS.md", agent],
         ["agents/software-design.md", claudeAgent],
+        [
+          "README.md",
+          adapterReadme("Claude Code", [".claude-plugin/plugin.json", "AGENTS.md", "agents/software-design.md", "skills/", "catalog/"], "Point Claude Code's local plugin install flow at this adapter directory."),
+        ],
       ],
     },
     {
       name: "codex",
-      files: [["AGENTS.md", agent]],
+      files: [
+        ["AGENTS.md", agent],
+        [
+          "README.md",
+          adapterReadme("Codex", ["AGENTS.md", "skills/", "catalog/"], "Use this directory as the project or global instructions and skills payload for Codex. `AGENTS.md` is the orchestrator instructions file."),
+        ],
+      ],
     },
     {
       name: "opencode",
@@ -89,6 +119,10 @@ ${agent}`;
   }
 }
 `,
+        ],
+        [
+          "README.md",
+          adapterReadme("OpenCode", ["opencode.jsonc", "AGENTS.md", "skills/", "catalog/"], "Use this directory as the OpenCode adapter payload. `opencode.jsonc` wires `AGENTS.md` through `instructions` and exposes `skills/` through `skills.paths`."),
         ],
       ],
     },

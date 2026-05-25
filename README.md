@@ -18,6 +18,8 @@ Generated adapters live under:
 - `adapters/codex`
 - `adapters/opencode`
 
+Root `AGENTS.md` provides cross-platform repository instructions. Each generated adapter also includes its own `README.md` with platform-specific install notes.
+
 ## Catalog Coverage
 
 The catalog contains 119 compact cards total:
@@ -43,17 +45,17 @@ Run `npm run validate` to check that the catalog and generated artifacts satisfy
 
 ## Install In Claude Code
 
-Generate the adapters, then point Claude Code's local plugin install flow at `adapters/claude-code/`. This directory is a Claude Code plugin root containing `.claude-plugin/plugin.json`, `agents/software-design.md`, `skills/`, and `catalog/`.
+Generate the adapters, then point Claude Code's local plugin install flow at `adapters/claude-code/`. This directory is a Claude Code plugin root containing `.claude-plugin/plugin.json`, `AGENTS.md`, `agents/software-design.md`, `README.md`, `skills/`, and `catalog/`.
 
 Key generated files include `adapters/claude-code/.claude-plugin/plugin.json` and `adapters/claude-code/agents/software-design.md`.
 
 ## Install In Codex
 
-Generate the adapters, then use `adapters/codex/` as the project or global instructions and skills payload for Codex. This adapter contains `AGENTS.md`, `skills/`, and `catalog/`, with `adapters/codex/AGENTS.md` serving as the orchestrator instructions file.
+Generate the adapters, then use `adapters/codex/` as the project or global instructions and skills payload for Codex. This adapter contains `AGENTS.md`, `README.md`, `skills/`, and `catalog/`, with `adapters/codex/AGENTS.md` serving as the orchestrator instructions file.
 
 ## Install In OpenCode
 
-Generate the adapters, then use `adapters/opencode/` as the OpenCode adapter payload. This adapter contains `opencode.jsonc`, `AGENTS.md`, `skills/`, and `catalog/`.
+Generate the adapters, then use `adapters/opencode/` as the OpenCode adapter payload. This adapter contains `opencode.jsonc`, `AGENTS.md`, `README.md`, `skills/`, and `catalog/`.
 
 The generated `adapters/opencode/opencode.jsonc` wires the adapter by setting `instructions: ["AGENTS.md"]` and `skills.paths: ["skills"]`.
 

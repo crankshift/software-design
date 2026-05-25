@@ -17,6 +17,10 @@ test("generateAll writes Claude Code, Codex, and OpenCode adapters", async () =>
     assert.equal(claudePlugin.name, "software-design");
     assert.deepEqual(claudePlugin.author, { name: "software-design contributors" });
 
+    const claudeReadme = await readFile(join(root, "adapters/claude-code/README.md"), "utf8");
+    assert.match(claudeReadme, /Claude Code/);
+    assert.match(claudeReadme, /Software Design Plugin/);
+
     const claudeAgent = await readFile(join(root, "adapters/claude-code/agents/software-design.md"), "utf8");
     assert.match(claudeAgent, /^---\n/);
     assert.match(claudeAgent, /^name: software-design$/m);
@@ -27,6 +31,10 @@ test("generateAll writes Claude Code, Codex, and OpenCode adapters", async () =>
 
     const codex = await readFile(join(root, "adapters/codex/AGENTS.md"), "utf8");
     assert.match(codex, /Software Design Orchestrator/);
+
+    const codexReadme = await readFile(join(root, "adapters/codex/README.md"), "utf8");
+    assert.match(codexReadme, /Codex/);
+    assert.match(codexReadme, /Software Design Plugin/);
 
     const opencode = await readFile(join(root, "adapters/opencode/opencode.jsonc"), "utf8");
     assert.deepEqual(JSON.parse(opencode), {
@@ -39,6 +47,10 @@ test("generateAll writes Claude Code, Codex, and OpenCode adapters", async () =>
 
     const opencodeAgent = await readFile(join(root, "adapters/opencode/AGENTS.md"), "utf8");
     assert.match(opencodeAgent, /Software Design Orchestrator/);
+
+    const opencodeReadme = await readFile(join(root, "adapters/opencode/README.md"), "utf8");
+    assert.match(opencodeReadme, /OpenCode/);
+    assert.match(opencodeReadme, /Software Design Plugin/);
   } finally {
     await rm(root, { recursive: true, force: true });
   }

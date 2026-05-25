@@ -102,11 +102,26 @@ async function validateAdapters(root) {
   assert.match(claudeAgent, /^color: blue$/m);
   assert.match(claudeAgent, /Software Design Orchestrator/);
 
+  const claudeInstructions = await readRequired(join(root, "adapters/claude-code/AGENTS.md"));
+  assert.match(claudeInstructions, /Software Design Orchestrator/);
+
+  const claudeReadme = await readRequired(join(root, "adapters/claude-code/README.md"));
+  assert.match(claudeReadme, /Software Design Plugin/);
+  assert.match(claudeReadme, /Claude Code/);
+
   const codexAgent = await readRequired(join(root, "adapters/codex/AGENTS.md"));
   assert.match(codexAgent, /Software Design Orchestrator/);
 
+  const codexReadme = await readRequired(join(root, "adapters/codex/README.md"));
+  assert.match(codexReadme, /Software Design Plugin/);
+  assert.match(codexReadme, /Codex/);
+
   const opencodeAgent = await readRequired(join(root, "adapters/opencode/AGENTS.md"));
   assert.match(opencodeAgent, /Software Design Orchestrator/);
+
+  const opencodeReadme = await readRequired(join(root, "adapters/opencode/README.md"));
+  assert.match(opencodeReadme, /Software Design Plugin/);
+  assert.match(opencodeReadme, /OpenCode/);
 
   const opencodeConfig = await readRequired(join(root, "adapters/opencode/opencode.jsonc"));
   assert.deepEqual(JSON.parse(opencodeConfig), {

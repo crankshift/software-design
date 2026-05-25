@@ -41,6 +41,17 @@ test("validateProject rejects missing generated adapter catalog card files", asy
   }
 });
 
+test("validateProject rejects missing generated adapter README files", async () => {
+  const root = await mkdtemp(join(tmpdir(), "software-design-validate-"));
+  try {
+    await generateAll(root);
+    await rm(join(root, "adapters/claude-code/README.md"), { force: true });
+    await assert.rejects(() => validateProject(root));
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("validateProject rejects Claude Code plugin author that is not an object with name", async () => {
   const root = await mkdtemp(join(tmpdir(), "software-design-validate-"));
   try {
