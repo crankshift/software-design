@@ -10,7 +10,10 @@ test("README documents direct package installs", async () => {
   assert.match(body, /Claude Code/);
   assert.match(body, /Codex/);
   assert.match(body, /OpenCode/);
+  assert.match(body, /\/plugin install software-design@crankshift/);
+  assert.doesNotMatch(body, /\/plugin install software-design@software-design/);
   assert.match(body, /\.claude-plugin\/plugin\.json/);
+  assert.match(body, /\.claude-plugin\/marketplace\.json/);
   assert.match(body, /\.codex-plugin\/plugin\.json/);
   assert.match(body, /\.opencode\/INSTALL\.md/);
   assert.match(body, /\.opencode\/plugins\/software-design\.js/);

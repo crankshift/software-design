@@ -78,6 +78,31 @@ test("validateProject rejects Claude Code plugin author that is not an object wi
   }
 });
 
+test("validateProject rejects Claude Code marketplace names other than crankshift", async () => {
+  const root = await mkdtemp(join(tmpdir(), "software-design-validate-"));
+  try {
+    await copyCanonicalFixture(root);
+    const marketplacePath = join(root, ".claude-plugin/marketplace.json");
+    await writeFile(
+      marketplacePath,
+      `${JSON.stringify(
+        {
+          name: "software-design",
+          owner: { name: "crankshift" },
+          plugins: [{ name: "software-design", source: "./" }],
+        },
+        null,
+        2,
+      )}\n`,
+      "utf8",
+    );
+
+    await assert.rejects(() => validateProject(root), /Claude Code marketplace name should be crankshift/);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("validateProject rejects legacy package-output trees", async () => {
   const root = await mkdtemp(join(tmpdir(), "software-design-validate-"));
   try {

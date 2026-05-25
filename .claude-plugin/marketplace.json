@@ -1,0 +1,12 @@
+{
+  "name": "crankshift",
+  "owner": {
+    "name": "crankshift"
+  },
+  "plugins": [
+    {
+      "name": "software-design",
+      "source": "./"
+    }
+  ]
+}

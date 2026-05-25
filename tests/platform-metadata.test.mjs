@@ -11,6 +11,19 @@ test("Claude Code plugin manifest lives at the repository root", async () => {
   assert.deepEqual(plugin.author, { name: "software-design contributors" });
 });
 
+test("Claude Code marketplace installs software-design from crankshift", async () => {
+  const marketplace = JSON.parse(await readFile(".claude-plugin/marketplace.json", "utf8"));
+
+  assert.equal(marketplace.name, "crankshift");
+  assert.deepEqual(marketplace.owner, { name: "crankshift" });
+  assert.deepEqual(marketplace.plugins, [
+    {
+      name: "software-design",
+      source: "./",
+    },
+  ]);
+});
+
 test("Codex plugin manifest points at the canonical skills directory", async () => {
   const plugin = JSON.parse(await readFile(".codex-plugin/plugin.json", "utf8"));
 

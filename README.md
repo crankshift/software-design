@@ -23,6 +23,7 @@ This repository is the single installable package. The source of truth is the ro
 Platform directories contain only metadata or install glue:
 
 - [`.claude-plugin/plugin.json`](.claude-plugin/plugin.json)
+- [`.claude-plugin/marketplace.json`](.claude-plugin/marketplace.json)
 - [`.codex-plugin/plugin.json`](.codex-plugin/plugin.json)
 - [`.opencode/INSTALL.md`](.opencode/INSTALL.md)
 - [`.opencode/plugins/software-design.js`](.opencode/plugins/software-design.js)
@@ -58,10 +59,10 @@ Register this repository as a plugin marketplace, then install Software Design:
 
 ```text
 /plugin marketplace add crankshift/software-design
-/plugin install software-design@software-design
+/plugin install software-design@crankshift
 ```
 
-Claude Code discovers [`.claude-plugin/plugin.json`](.claude-plugin/plugin.json), root-level [`skills/`](skills/), and other plugin content from the repository root.
+Claude Code reads [`.claude-plugin/marketplace.json`](.claude-plugin/marketplace.json) as the `crankshift` marketplace and discovers [`.claude-plugin/plugin.json`](.claude-plugin/plugin.json), root-level [`skills/`](skills/), and other plugin content from the repository root.
 
 ### Codex CLI
 
@@ -101,7 +102,7 @@ Detailed OpenCode instructions are in [`.opencode/INSTALL.md`](.opencode/INSTALL
 
 ## Plugin Metadata
 
-Claude Code discovers [`.claude-plugin/plugin.json`](.claude-plugin/plugin.json), root-level [`skills/`](skills/), and other plugin content from the repository root.
+Claude Code reads [`.claude-plugin/marketplace.json`](.claude-plugin/marketplace.json) as the `crankshift` marketplace and discovers [`.claude-plugin/plugin.json`](.claude-plugin/plugin.json), root-level [`skills/`](skills/), and other plugin content from the repository root.
 
 Codex reads [`.codex-plugin/plugin.json`](.codex-plugin/plugin.json), which points Codex at the canonical [`skills/`](skills/) directory and describes the plugin interface.
 

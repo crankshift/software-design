@@ -192,6 +192,19 @@ async function validatePlatformMetadata(root) {
     "Claude Code plugin author should be an object with contributor name",
   );
 
+  const claudeMarketplace = await readJson(join(root, ".claude-plugin/marketplace.json"));
+  assert.equal(claudeMarketplace.name, "crankshift", "Claude Code marketplace name should be crankshift");
+  assert.deepEqual(
+    claudeMarketplace.owner,
+    { name: "crankshift" },
+    "Claude Code marketplace owner should be crankshift",
+  );
+  assert.deepEqual(
+    claudeMarketplace.plugins,
+    [{ name: "software-design", source: "./" }],
+    "Claude Code marketplace should expose software-design from the repository root",
+  );
+
   const codexPlugin = await readJson(join(root, ".codex-plugin/plugin.json"));
   assert.equal(codexPlugin.name, "software-design");
   assert.equal(codexPlugin.version, "0.1.0");
