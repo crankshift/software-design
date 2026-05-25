@@ -17,6 +17,7 @@ test("README documents direct package installs without generated adapters", asyn
   assert.match(body, /npm run validate/);
   assert.match(body, /npm test/);
   assert.match(body, /npm run check/);
+  assert.doesNotMatch(body, /git clone/);
   assert.doesNotMatch(body, /npm run generate/);
   assert.doesNotMatch(body, /adapters\//);
 });

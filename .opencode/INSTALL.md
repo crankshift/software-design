@@ -10,7 +10,7 @@ Add software-design-plugin to the `plugin` array in your `opencode.json` (global
 
 ```json
 {
-  "plugin": ["software-design-plugin@git+https://github.com/khmara/software-design.git"]
+  "plugin": ["software-design-plugin@git+https://github.com/crankshift/software-design.git"]
 }
 ```
 
@@ -59,7 +59,7 @@ To pin a specific version:
 
 ```json
 {
-  "plugin": ["software-design-plugin@git+https://github.com/khmara/software-design.git#v0.1.0"]
+  "plugin": ["software-design-plugin@git+https://github.com/crankshift/software-design.git#v0.1.0"]
 }
 ```
 
@@ -80,7 +80,7 @@ the plugin, try installing with system npm and pointing OpenCode at the local
 package:
 
 ```powershell
-npm install software-design-plugin@git+https://github.com/khmara/software-design.git --prefix "$HOME\.config\opencode"
+npm install software-design-plugin@git+https://github.com/crankshift/software-design.git --prefix "$HOME\.config\opencode"
 ```
 
 Then use the installed package path in `opencode.json`:
@@ -106,5 +106,5 @@ When skills reference Claude Code tools:
 
 ## Getting Help
 
-- Report issues: https://github.com/khmara/software-design/issues
-- Full documentation: https://github.com/khmara/software-design/blob/main/README.md
+- Report issues: https://github.com/crankshift/software-design/issues
+- Full documentation: https://github.com/crankshift/software-design/blob/main/README.md

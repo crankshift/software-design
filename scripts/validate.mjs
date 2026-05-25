@@ -139,7 +139,7 @@ async function validatePlatformMetadata(root) {
   const opencodeInstall = await readRequired(join(root, ".opencode/INSTALL.md"));
   assert.match(opencodeInstall, /Installing Software Design Plugin for OpenCode/);
   assert.match(opencodeInstall, /Add software-design-plugin to the `plugin` array/);
-  assert.match(opencodeInstall, /software-design-plugin@git\+https:\/\/github\.com\/khmara\/software-design\.git/);
+  assert.match(opencodeInstall, /software-design-plugin@git\+https:\/\/github\.com\/crankshift\/software-design\.git/);
   assert.match(opencodeInstall, /Migrating from the old symlink-based install/);
   assert.match(opencodeInstall, /Tool mapping/);
 
