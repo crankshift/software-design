@@ -5,6 +5,7 @@
   "type": "module",
   "main": ".opencode/plugins/software-design.js",
   "description": "Software design skills and catalog for AI agents.",
+  "license": "MIT",
   "scripts": {
     "test": "node --test tests/*.test.mjs",
     "validate": "node scripts/validate.mjs",
